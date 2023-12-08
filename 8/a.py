@@ -1,34 +1,27 @@
-import re
-from typing import List
+from typing import Tuple, Dict
 
 with open("data.txt", "r+") as f:
     l = f.read()
-    _maps = l.split("\n\n")
-    seed = _maps[0]
-    maps = _maps[1:]
+    _instructions, _map_lines = l.split("\n\n")
 
-    values = list(map(lambda s: int(s), re.findall(r"\d+", seed)))
-    for m in maps:
-        ms = m.split("\n")
-        print(ms[0])
-        map_rules = ms[1:]
+    instructions = list(map(lambda s: 1 if s == "R" else 0, [*_instructions])) 
+    map_lines = _map_lines.split("\n")
+    m: Dict[str, Tuple[str, str]] = {}
+    for line in map_lines:
+        k, mi = line.split(" = ")    
+        mi = mi.replace("(", "") 
+        mi = mi.replace(")", "") 
+        l, r = mi.split(", ")
+        m[k] = (l, r)
 
-        mapped_indices = []
-        for rule in map_rules:
-            dest_start, src_start, r = map(lambda s: int(s), rule.split(" "))
-            new_values = []
-
-            i = 0
-            for v in values:
-                if i not in mapped_indices and (v >= src_start and v < src_start + r):
-                    new_values.append(v - src_start + dest_start)
-                    mapped_indices.append(i)
-                else:
-                    new_values.append(v)
-                i = i + 1
-            print([dest_start, src_start, r], values, new_values)
-            values = new_values
+    cur = "AAA"
+    end = "ZZZ"
+    i = 0
+    while True:
+        if cur == end:
+            break
+        cur_instruction = instructions[i % len(instructions)]
+        cur = m[cur][cur_instruction]  
+        i += 1
     
-    print(values)
-    print(min(values))
-    # print(maps)
+    print(i)
