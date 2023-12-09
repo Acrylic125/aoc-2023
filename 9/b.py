@@ -1,36 +1,16 @@
-from typing import Tuple, Dict
-from math import gcd
-from functools import reduce
+from typing import Tuple, Dict, List
 
 with open("data.txt", "r+") as f:
-    l = f.read()
-    _instructions, _map_lines = l.split("\n\n")
+    l = f.readlines()
+    sequences = list(map(lambda line: list(map(lambda s: int(s), line.split(" "))), l))
 
-    instructions = list(map(lambda s: 1 if s == "R" else 0, [*_instructions])) 
-    map_lines = _map_lines.split("\n")
-    m: Dict[str, Tuple[str, str]] = {}
-    for line in map_lines:
-        k, mi = line.split(" = ")    
-        mi = mi.replace("(", "") 
-        mi = mi.replace(")", "") 
-        l, r = mi.split(", ")
-        m[k] = (l, r)
-
-    cur = list(filter(lambda k: k[2] == "A", m.keys()))
-    i = 0
-    found = [None] * len(cur)
-    while True:
-        for j in range(len(cur)):
-            if cur[j][2] == "Z":
-                found[j] = i
-        if all(map(lambda f: f is not None, found)):
-            break
-        cur_instruction = instructions[i % len(instructions)]
-        cur = list(map(lambda c: m[c][cur_instruction], cur))
-        i += 1
+    def diff_sequence(sequence: list) -> list:
+        return list(map(lambda i: sequence[i + 1] - sequence[i], range(len(sequence) - 1)))
     
-    # s = 1
-    # for f in found:
-    #     s *= f
-    lcm = reduce(lambda x,y:(x*y)//gcd(x,y), found)
-    print(lcm)
+    def get_first_of_sequence(sequence: List[int]) -> int:
+        diff = diff_sequence(sequence)
+        if len(diff) == 0 or all(map(lambda d: d == 0, diff)):
+            return sequence[0]
+        return sequence[0]- get_first_of_sequence(diff) 
+     
+    print(sum(list(map(lambda s: get_first_of_sequence(s), sequences))))
