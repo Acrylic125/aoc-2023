@@ -1,27 +1,16 @@
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 
 with open("data.txt", "r+") as f:
-    l = f.read()
-    _instructions, _map_lines = l.split("\n\n")
+    l = f.readlines()
+    sequences = list(map(lambda line: list(map(lambda s: int(s), line.split(" "))), l))
 
-    instructions = list(map(lambda s: 1 if s == "R" else 0, [*_instructions])) 
-    map_lines = _map_lines.split("\n")
-    m: Dict[str, Tuple[str, str]] = {}
-    for line in map_lines:
-        k, mi = line.split(" = ")    
-        mi = mi.replace("(", "") 
-        mi = mi.replace(")", "") 
-        l, r = mi.split(", ")
-        m[k] = (l, r)
-
-    cur = "AAA"
-    end = "ZZZ"
-    i = 0
-    while True:
-        if cur == end:
-            break
-        cur_instruction = instructions[i % len(instructions)]
-        cur = m[cur][cur_instruction]  
-        i += 1
+    def diff_sequence(sequence: list) -> list:
+        return list(map(lambda i: sequence[i + 1] - sequence[i], range(len(sequence) - 1)))
     
-    print(i)
+    def get_last_of_sequence(sequence: List[int]) -> int:
+        diff = diff_sequence(sequence)
+        if len(diff) == 0 or all(map(lambda d: d == 0, diff)):
+            return sequence[len(sequence) - 1]
+        return get_last_of_sequence(diff) + sequence[len(sequence) - 1]
+     
+    print(sum(list(map(lambda s: get_last_of_sequence(s), sequences))))
